@@ -1,12 +1,15 @@
 #!/usr/bin/python
+import os
 import os.path
 import sys
 import time
 import math
+from time import sleep
+from curses import wrapper
 
 fileNameTxt = 'findprime.txt'
 fileNameSta = 'findprime.sta'
-CONST_NUMFIND = 1000
+CONST_NUMFIND = 5000
 
 # Method to test if a number is a prime number
 def is_prime(n):
@@ -39,30 +42,46 @@ def readStatus():
         return lastPrimeNum
     else:
 	return 1
-        
 
-# Python program to ask the user for a range and display all the prime numbers in that interval
-
-# take input from the user
-num = readStatus()
-startTime = time.time()
-
-try:
-    while True:
-        # prime numbers are greater than 1
-	if is_prime(num):
-	    lastprime = num
-	    writeLog(num)
-	    writeStatus(num)
-	num += 1
-	# Output progress
-	if num % CONST_NUMFIND == 0:
-	    elapsedTime = time.time() - startTime
-	    txt = 'Last prime %i, checked %i numbers in %0.3f seconds' % (lastprime,CONST_NUMFIND,elapsedTime)
-	    sys.stdout.write("\r" + txt)
-	    sys.stdout.flush()
-	    startTime = time.time()
-	
-except KeyboardInterrupt:
-    pass
+def main(stdscr):
+    startPrimeNum = readStatus()
+    startTimeMain = time.time()
+    startTime = time.time()
     
+
+    # Clear screen
+    stdscr.clear()
+    stdscr.addstr(1, 5 , 'Start from prime number  : {0}'.format(startPrimeNum))
+    stdscr.addstr(1, 50, 'Start time : {0}'.format(time.strftime('%H:%M:%S',time.localtime(startTimeMain))))
+    stdscr.refresh()
+    num = startPrimeNum
+    
+    try:
+        while True:
+            # prime numbers are greater than 1
+            if is_prime(num):
+                lastprime = num
+                writeLog(num)
+                writeStatus(num)
+        
+            num += 1
+            # Output progress
+            if num % CONST_NUMFIND == 0:
+                runTime = time.time() - startTimeMain
+                totalPrime = num-startPrimeNum
+                stdscr.addstr(2, 5 , 'Total prime number found : {0}'.format(totalPrime))
+                stdscr.addstr(2, 50, 'Run time   : {0}'.format(time.strftime('%H:%M:%S',time.gmtime(runTime))))
+                
+                elapsedTime = time.time() - startTime
+                stdscr.addstr(4, 5, 'Last prime : {0}'.format(lastprime))
+                stdscr.addstr(5, 5, 'Checked {0} numbers in {1:.2f} seconds'.format(CONST_NUMFIND,elapsedTime))
+                stdscr.refresh()
+                startTime = time.time()
+	
+            sleep(0.001)
+    
+    except KeyboardInterrupt:
+        print '\nDone'
+        pass
+
+wrapper(main)        
